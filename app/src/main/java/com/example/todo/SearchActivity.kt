@@ -1,6 +1,8 @@
 package com.example.todo
 
 import android.os.Bundle
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -25,6 +27,7 @@ class SearchActivity : AppCompatActivity() {
             insets
         }
 
+        var filterIsOn = false
         val db = DbServices(this)
         val categoriesSpinner = findViewById<Spinner>(R.id.categoriesSpinner)
         val rv = findViewById<RecyclerView>(R.id.todoList)
@@ -41,12 +44,25 @@ class SearchActivity : AppCompatActivity() {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         categoriesSpinner.adapter = adapter
 
-        filterBtn.setOnClickListener {
-            val selectedCategory = categoriesSpinner.selectedItem as Category
-            val categoryId = selectedCategory.id
-            val list = db.getTodoByCategoryId(categoryId = categoryId)
+        db.loadTodos(rv, null)
 
-            db.loadTodos(rv, list)
+        updateFilterBtn(filterIsOn, filterBtn)
+
+        filterBtn.setOnClickListener {
+            if(!filterIsOn){
+                val selectedCategory = categoriesSpinner.selectedItem as Category
+                val categoryId = selectedCategory.id
+                val list = db.getTodoByCategoryId(categoryId = categoryId)
+
+                db.loadTodos(rv, list)
+
+                filterIsOn = !filterIsOn
+                updateFilterBtn(filterIsOn, filterBtn)
+            } else{
+                db.loadTodos(rv, null)
+                filterIsOn = !filterIsOn
+                updateFilterBtn(filterIsOn, filterBtn)
+            }
         }
 
         searchBtn.setOnClickListener {
@@ -55,6 +71,30 @@ class SearchActivity : AppCompatActivity() {
             val list = db.findTodoByName(input)
 
             db.loadTodos(rv, list)
+        }
+
+        categoriesSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                filterIsOn = false
+                updateFilterBtn(filterIsOn, filterBtn)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+        }
+    }
+
+    fun updateFilterBtn(filterIsOn: Boolean, filterBtn: ImageView){
+        if(filterIsOn){
+            filterBtn.setImageResource(R.drawable.close_svgrepo_com)
+        } else{
+            filterBtn.setImageResource(R.drawable.filter_list_svgrepo_com)
         }
     }
 }
