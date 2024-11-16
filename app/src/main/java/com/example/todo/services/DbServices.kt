@@ -242,7 +242,7 @@ class DbServices(
         if(result <= 0){
             Toast.makeText(context, "Erro ao finalizar todo", Toast.LENGTH_SHORT).show()
         } else {
-            Toast.makeText(context, "Todo finalizado com sucesso", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Todo atualizado com sucesso", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -250,7 +250,7 @@ class DbServices(
         val db = readableDatabase
         val listaTodos = mutableListOf<Todo>()
         val query = """
-            SELECT * FROM todo WHERE $COLUMN_TODO_CATEGORY_ID = $categoryId
+            SELECT * FROM $TABLE_TODOS WHERE $COLUMN_TODO_CATEGORY_ID = $categoryId ORDER BY $COLUMN_TODO_START_HOUR
         """.trimIndent()
         val cursor = db.rawQuery(query, null)
 
@@ -286,9 +286,16 @@ class DbServices(
         }
     }
 
-    fun loadTodos(todoList: RecyclerView){
+    fun loadTodos(todoList: RecyclerView, filteredTodo: List<Todo>?){
         val db = DbServices(context)
-        val list = db.getTodos()
+        val list: List<Todo>
+
+        if(filteredTodo == null){
+            list = db.getTodos()
+        } else {
+            list = filteredTodo
+        }
+
         val adapter = CustomAdapterForTodos(context, list, db)
 
         todoList.adapter = adapter
@@ -297,5 +304,32 @@ class DbServices(
         val touchHelper = TouchHelper(adapter, db)
 
         ItemTouchHelper(touchHelper).attachToRecyclerView(todoList)
+    }
+
+    fun findTodoByName(name: String): List<Todo>{
+        val listTodo = ArrayList<Todo>()
+        val db = this.readableDatabase
+        val query = "SELECT * FROM $TABLE_TODOS WHERE $COLUMN_TODO_NAME LIKE ?"
+        val args = "%$name%"
+        val cursor = db.rawQuery(query, arrayOf(args))
+
+        if(cursor.moveToFirst()){
+            do{
+                val todo = Todo(
+                    id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TODO_ID)),
+                    name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_NAME)),
+                    content = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_CONTENT)),
+                    creationDate = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_CREATION_DATE)),
+                    startHour = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_START_HOUR)),
+                    duration = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_DURATION)),
+                    categoryId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TODO_CATEGORY_ID)),
+                    isFinished = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TODO_IS_FINISHED)) == 1
+                )
+
+                listTodo.add(todo)
+            } while(cursor.moveToNext())
+        }
+
+        return listTodo
     }
 }

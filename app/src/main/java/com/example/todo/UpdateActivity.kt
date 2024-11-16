@@ -47,7 +47,7 @@ class UpdateActivity : AppCompatActivity() {
         val minutesUpdateInput = findViewById<EditText>(R.id.minutesUpdateInput)
         val durationHoursUpdateInput = findViewById<EditText>(R.id.durationHoursUpdateInput)
         val durationMinutesUpdateInput = findViewById<EditText>(R.id.durationMinutesUpdateInput)
-        val isFinishedVal = findViewById<TextView>(R.id.isFinishedVal)
+        val categoryIdVal = findViewById<TextView>(R.id.categoryidval)
         val btn_update = findViewById<Button>(R.id.btn_update)
 
         val adapter = ArrayAdapter<Category>(
@@ -76,7 +76,7 @@ class UpdateActivity : AppCompatActivity() {
             minutesUpdateInput.setText(minutes)
             durationHoursUpdateInput.setText(durationHour.toString())
             durationMinutesUpdateInput.setText(durationMinutes.toString())
-            isFinishedVal.text = todo.isFinished.toString()
+            categoryIdVal.text = todo.categoryId.toString()
 
             val selectedCategoryIndex = list.indexOfFirst { it.id == todo.categoryId }
             if (selectedCategoryIndex != -1) {

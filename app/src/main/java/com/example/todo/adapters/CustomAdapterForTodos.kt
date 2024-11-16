@@ -16,6 +16,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
@@ -71,16 +72,16 @@ class CustomAdapterForTodos(
         db.updateIsFinish(id, isFinished)
     }
 
-    fun updateItemLayout(isFinished: Boolean, checkBtn: ImageView, todoName: TextView, startBtn: Button){
+    fun updateItemLayout(isFinished: Boolean, checkBtn: ImageView, todoName: TextView, cardView: CardView, startBtn: Button){
         if(isFinished){
-            checkBtn.setColorFilter(ContextCompat.getColor(context, R.color.black))
-            checkBtn.visibility = View.INVISIBLE
+            checkBtn.setImageResource(R.drawable.reload_ui_svgrepo_com)
             startBtn.isEnabled = false
+            cardView.setBackgroundColor(ContextCompat.getColor(context, R.color.gray))
             todoName.paintFlags = todoName.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
         } else{
-            checkBtn.setColorFilter(ContextCompat.getColor(context, R.color.green))
-            checkBtn.visibility = View.VISIBLE
+            checkBtn.setImageResource(R.drawable.baseline_check_24)
             startBtn.isEnabled = true
+            cardView.setBackgroundColor(ContextCompat.getColor(context, R.color.white))
             todoName.paintFlags = todoName.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
         }
     }
@@ -96,8 +97,8 @@ class CustomAdapterForTodos(
         private val todoCategory: TextView = itemView.findViewById(R.id.todo_category)
         private val startHour:TextView = itemView.findViewById(R.id.todo_start_time)
         private val checkBtn = itemView.findViewById<ImageView>(R.id.check_btn)
+        private val cardView = itemView.findViewById<CardView>(R.id.cardView)
         private val startBtn = itemView.findViewById<Button>(R.id.btn_start)
-
 
         fun bind(todo: Todo) {
             val categoryName = db.getCategoriaById(todo.categoryId)
@@ -107,16 +108,14 @@ class CustomAdapterForTodos(
                 updateIsFinish(todo.id!!, todoIsFinishedVal)
                 todo.isFinished = todoIsFinishedVal
 
-                updateItemLayout(todoIsFinishedVal, checkBtn, todoName, startBtn)
+                updateItemLayout(todoIsFinishedVal, checkBtn, todoName, cardView, startBtn)
             }
 
             todoName.text = todo.name
             todoCategory.text = categoryName!!.name
             startHour.text = todo.startHour
 
-            updateItemLayout(todo.isFinished, checkBtn, todoName, startBtn)
+            updateItemLayout(todo.isFinished, checkBtn, todoName, cardView, startBtn)
         }
     }
-
-
 }

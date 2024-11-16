@@ -28,11 +28,10 @@ class TouchHelper(
         val position = viewHolder.adapterPosition
         val todo = adapter.getTodoItemAtPosition(position)
         val todoId = todo.id
-        if(todoId == null){
+        if(todoId == null) {
             return
         }
 
         db.deleteTodo(todoId)
-
     }
 }

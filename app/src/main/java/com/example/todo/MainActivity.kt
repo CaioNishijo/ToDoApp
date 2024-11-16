@@ -8,7 +8,11 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.Spinner
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -16,9 +20,12 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todo.adapters.CustomAdapterForTodos
+import com.example.todo.entities.Category
 import com.example.todo.services.DbServices
 import com.example.todo.services.TouchHelper
+import com.example.todo.services.closeFabMenu
 import com.example.todo.services.createNotificationsChannel
+import com.example.todo.services.openFabMenu
 import com.example.todo.services.sendNotification
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -34,10 +41,25 @@ class MainActivity : AppCompatActivity() {
         }
 
         createNotificationsChannel(this)
+        var isOpen = false
         val db = DbServices(this)
         val addTodoBtn = findViewById<FloatingActionButton>(R.id.add_todo)
-        val clearBtn = findViewById<Button>(R.id.clear_btn)
+        val clearBtn = findViewById<FloatingActionButton>(R.id.clear_btn)
         val rv = findViewById<RecyclerView>(R.id.todo_list)
+        val openSearchActBtn = findViewById<FloatingActionButton>(R.id.openSearchActBtn)
+        val menuBtn = findViewById<FloatingActionButton>(R.id.menu_button)
+        val btnLayout = findViewById<LinearLayout>(R.id.buttonLayout)
+        btnLayout.bringToFront()
+
+        menuBtn.setOnClickListener {
+            if(isOpen){
+                isOpen = closeFabMenu(btnLayout)
+                menuBtn.setImageResource(R.drawable.options_lines_svgrepo_com)
+            } else {
+                isOpen = openFabMenu(btnLayout)
+                menuBtn.setImageResource(R.drawable.close_svgrepo_com)
+            }
+        }
 
         addTodoBtn.setOnClickListener {
             intent = Intent(this, AddTodoFormsActivity::class.java)
@@ -51,10 +73,15 @@ class MainActivity : AppCompatActivity() {
             dialog.setPositiveButton("Sim") { _, _ ->
                 db.clearAll()
 
-                db.loadTodos(rv)
+                db.loadTodos(rv, null)
             }
             dialog.setNegativeButton("Cancelar", null)
             dialog.show()
+        }
+
+        openSearchActBtn.setOnClickListener {
+            val intent = Intent(this, SearchActivity::class.java)
+            startActivity(intent)
         }
     }
 
@@ -63,6 +90,6 @@ class MainActivity : AppCompatActivity() {
         val db = DbServices(this)
         val rv = findViewById<RecyclerView>(R.id.todo_list)
 
-        db.loadTodos(rv)
+        db.loadTodos(rv, null)
     }
 }
