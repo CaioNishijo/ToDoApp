@@ -1,15 +1,17 @@
 package com.example.todo
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Spinner
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -27,51 +29,40 @@ class SearchActivity : AppCompatActivity() {
             insets
         }
 
-        var filterIsOn = false
         val db = DbServices(this)
+        var haveInput: Boolean
+        val clearBtn = findViewById<ImageView>(R.id.clearBtn)
         val categoriesSpinner = findViewById<Spinner>(R.id.categoriesSpinner)
+        val isFinishedSpinner = findViewById<Spinner>(R.id.isFinishedSpinner)
+        val isFinishedSpinnerItens = listOf("---", "Finalizadas", "Não finalizadas")
         val rv = findViewById<RecyclerView>(R.id.todoList)
-        val filterBtn = findViewById<ImageView>(R.id.filterBtn)
         val categoriesList = db.getCategorias()
+        val mutableCategoriesList = categoriesList.toMutableList()
         val searchInput = findViewById<EditText>(R.id.searchInput)
-        val searchBtn = findViewById<Button>(R.id.searchBtn)
+        val noOption = Category(
+            id = 999,
+            name = "---"
+        )
+        mutableCategoriesList.add(0, noOption)
 
-        val adapter = ArrayAdapter<Category>(
+        val isFinishedAdapter = ArrayAdapter<String>(
             this,
             android.R.layout.simple_spinner_item,
-            categoriesList
+            isFinishedSpinnerItens
         )
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        categoriesSpinner.adapter = adapter
+
+        isFinishedAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        isFinishedSpinner.adapter = isFinishedAdapter
+
+        val categoryAdapter = ArrayAdapter<Category>(
+            this,
+            android.R.layout.simple_spinner_item,
+            mutableCategoriesList
+        )
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        categoriesSpinner.adapter = categoryAdapter
 
         db.loadTodos(rv, null)
-
-        updateFilterBtn(filterIsOn, filterBtn)
-
-        filterBtn.setOnClickListener {
-            if(!filterIsOn){
-                val selectedCategory = categoriesSpinner.selectedItem as Category
-                val categoryId = selectedCategory.id
-                val list = db.getTodoByCategoryId(categoryId = categoryId)
-
-                db.loadTodos(rv, list)
-
-                filterIsOn = !filterIsOn
-                updateFilterBtn(filterIsOn, filterBtn)
-            } else{
-                db.loadTodos(rv, null)
-                filterIsOn = !filterIsOn
-                updateFilterBtn(filterIsOn, filterBtn)
-            }
-        }
-
-        searchBtn.setOnClickListener {
-            val input = searchInput.text.toString()
-
-            val list = db.findTodoByName(input)
-
-            db.loadTodos(rv, list)
-        }
 
         categoriesSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
@@ -80,21 +71,81 @@ class SearchActivity : AppCompatActivity() {
                 position: Int,
                 id: Long
             ) {
-                filterIsOn = false
-                updateFilterBtn(filterIsOn, filterBtn)
+                val name = searchInput.text.toString()
+                val selectedCategory = categoriesSpinner.selectedItem as Category
+                val categoryId = selectedCategory.id
+                val selectedIsFinished = isFinishedSpinner.selectedItem as String
+
+                val list = db.filterService(name, categoryId.toString(), selectedIsFinished)
+                db.loadTodos(rv, list)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
 
             }
         }
+
+        isFinishedSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                val name = searchInput.text.toString()
+                val selectedCategory = categoriesSpinner.selectedItem as Category
+                val categoryId = selectedCategory.id
+                val selectedIsFinished = isFinishedSpinner.selectedItem as String
+
+                val list = db.filterService(name, categoryId.toString(), selectedIsFinished)
+                db.loadTodos(rv, list)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+        }
+
+        searchInput.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                haveInput = true
+                updateClearBtn(haveInput, clearBtn, searchInput)
+                val name = searchInput.text.toString()
+                val selectedCategory = categoriesSpinner.selectedItem as Category
+                val categoryId = selectedCategory.id
+                val selectedIsFinished = isFinishedSpinner.selectedItem as String
+
+                val list = db.filterService(name, categoryId.toString(), selectedIsFinished)
+                db.loadTodos(rv, list)
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+            }
+        })
+
+        clearBtn.setOnClickListener {
+            haveInput = false
+            searchInput.setText("")
+            updateClearBtn(haveInput, clearBtn, searchInput)
+        }
     }
 
-    fun updateFilterBtn(filterIsOn: Boolean, filterBtn: ImageView){
-        if(filterIsOn){
-            filterBtn.setImageResource(R.drawable.close_svgrepo_com)
+    fun updateClearBtn(haveInput: Boolean, clearBtn: ImageView, searchInput: EditText){
+        if(haveInput && searchInput.text.toString().isNotEmpty()){
+            clearBtn.visibility = View.VISIBLE
+            val layoutParams = searchInput.layoutParams as ConstraintLayout.LayoutParams
+            layoutParams.matchConstraintPercentWidth = 0.8f
+            searchInput.layoutParams = layoutParams
         } else{
-            filterBtn.setImageResource(R.drawable.filter_list_svgrepo_com)
+            clearBtn.visibility = View.GONE
+            val layoutParams = searchInput.layoutParams as ConstraintLayout.LayoutParams
+            layoutParams.matchConstraintPercentWidth = 0.9f
+            searchInput.layoutParams = layoutParams
         }
     }
 }

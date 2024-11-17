@@ -9,25 +9,18 @@ import android.provider.AlarmClock
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.cardview.widget.CardView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todo.DeleteActivity
 import com.example.todo.R
 import com.example.todo.UpdateActivity
 import com.example.todo.entities.Todo
 import com.example.todo.services.DbServices
-import com.example.todo.services.TouchHelper
-import org.w3c.dom.Text
 
 class CustomAdapterForTodos(
     val context: Context,
@@ -58,7 +51,7 @@ class CustomAdapterForTodos(
             intent.putExtra("TODO_ID", todo.id)
             context.startActivity(intent)
         }
-        holder.itemView.findViewById<Button>(R.id.btn_start).setOnClickListener {
+        holder.itemView.findViewById<ImageView>(R.id.btn_start).setOnClickListener {
             val intent = Intent(AlarmClock.ACTION_SHOW_TIMERS)
             try{
                 context.startActivity(intent)
@@ -72,7 +65,7 @@ class CustomAdapterForTodos(
         db.updateIsFinish(id, isFinished)
     }
 
-    fun updateItemLayout(isFinished: Boolean, checkBtn: ImageView, todoName: TextView, cardView: CardView, startBtn: Button){
+    fun updateItemLayout(isFinished: Boolean, checkBtn: ImageView, todoName: TextView, cardView: CardView, startBtn: ImageView){
         if(isFinished){
             checkBtn.setImageResource(R.drawable.reload_ui_svgrepo_com)
             startBtn.isEnabled = false
@@ -98,7 +91,7 @@ class CustomAdapterForTodos(
         private val startHour:TextView = itemView.findViewById(R.id.todo_start_time)
         private val checkBtn = itemView.findViewById<ImageView>(R.id.check_btn)
         private val cardView = itemView.findViewById<CardView>(R.id.cardView)
-        private val startBtn = itemView.findViewById<Button>(R.id.btn_start)
+        private val startBtn = itemView.findViewById<ImageView>(R.id.btn_start)
 
         fun bind(todo: Todo) {
             val categoryName = db.getCategoriaById(todo.categoryId)

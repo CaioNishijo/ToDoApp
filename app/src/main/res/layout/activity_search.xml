@@ -7,23 +7,13 @@
     android:layout_height="match_parent"
     tools:context=".SearchActivity">
 
-    <ImageView
-        android:id="@+id/filterBtn"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="10dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchBtn"
-        app:srcCompat="@drawable/filter_list_svgrepo_com" />
-
     <Spinner
         android:id="@+id/categoriesSpinner"
         android:layout_width="120dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
-        android:layout_marginEnd="10dp"
-        app:layout_constraintEnd_toStartOf="@+id/filterBtn"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/searchInput" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -41,22 +31,33 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:ems="10"
-        android:inputType="text"
         android:hint="Busque pelo nome da tarefa"
-        app:layout_constraintEnd_toStartOf="@+id/searchBtn"
-        app:layout_constraintHorizontal_bias="0.459"
+        android:inputType="text"
+        app:layout_constraintEnd_toStartOf="@+id/clearBtn"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.65"/>
+        app:layout_constraintWidth_percent="0.9" />
 
-    <Button
-        android:id="@+id/searchBtn"
-        android:layout_width="wrap_content"
+    <Spinner
+        android:id="@+id/isFinishedSpinner"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintEnd_toStartOf="@+id/categoriesSpinner"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/searchInput" />
+
+    <ImageView
+        android:id="@+id/clearBtn"
+        android:visibility="gone"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="10dp"
-        android:text="Pesquisar"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/close_svgrepo_com" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

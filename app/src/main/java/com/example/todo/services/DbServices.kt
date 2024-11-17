@@ -1,15 +1,12 @@
 package com.example.todo.services
 
-import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.todo.R
 import com.example.todo.adapters.CustomAdapterForTodos
 import com.example.todo.entities.Category
 import com.example.todo.entities.Todo
@@ -101,7 +98,7 @@ class DbServices(
         }
     }
 
-    fun insertCategoriesDefaultValues(p0: SQLiteDatabase?){
+    private fun insertCategoriesDefaultValues(p0: SQLiteDatabase?){
         p0?.execSQL("""
             INSERT INTO $TABLE_CATEGORIES($COLUMN_CATEGORY_NAME) VALUES ("Fácil")
         """.trimIndent())
@@ -129,7 +126,7 @@ class DbServices(
         return lista
     }
 
-    fun getTodos(): List<Todo>{
+    private fun getTodos(): List<Todo>{
         val lista = ArrayList<Todo>()
         val db = this.readableDatabase
         val cursor = db.rawQuery("SELECT * FROM $TABLE_TODOS ORDER BY $COLUMN_TODO_START_HOUR ASC", null)
@@ -203,11 +200,9 @@ class DbServices(
         val db = writableDatabase
         val query = "DELETE FROM $TABLE_TODOS WHERE $COLUMN_TODO_ID = ?"
 
-        try{
-            db.execSQL(query, arrayOf(id))
+        db.use { dbFun ->
+            dbFun.execSQL(query, arrayOf(id))
             Toast.makeText(context, "Todo deletado com sucesso", Toast.LENGTH_SHORT).show()
-        } finally {
-            db.close()
         }
     }
 
@@ -246,55 +241,20 @@ class DbServices(
         }
     }
 
-    fun getTodoByCategoryId(categoryId: Int): List<Todo>{
-        val db = readableDatabase
-        val listaTodos = mutableListOf<Todo>()
-        val query = """
-            SELECT * FROM $TABLE_TODOS WHERE $COLUMN_TODO_CATEGORY_ID = $categoryId ORDER BY $COLUMN_TODO_START_HOUR
-        """.trimIndent()
-        val cursor = db.rawQuery(query, null)
-
-        if(cursor.moveToFirst()){
-            do{
-                val todo = Todo (
-                    id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TODO_ID)),
-                    name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_NAME)),
-                    content = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_CONTENT)),
-                    creationDate = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_CREATION_DATE)),
-                    startHour = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_START_HOUR)),
-                    duration = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_DURATION)),
-                    categoryId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TODO_CATEGORY_ID)),
-                    isFinished = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TODO_IS_FINISHED)) == 1
-                )
-                listaTodos.add(todo)
-            } while(cursor.moveToNext())
-        }
-
-        return listaTodos
-    }
-
     fun clearAll(){
         val db = writableDatabase
         val query = "DELETE FROM $TABLE_TODOS"
         val resetAutoincrement = "DELETE FROM sqlite_sequence WHERE name = '$TABLE_TODOS'"
 
-        try{
-            db.execSQL(query)
-            db.execSQL(query)
-        } finally{
-            db.close()
+        db.use { dbFun ->
+            dbFun.execSQL(query)
+            dbFun.execSQL(resetAutoincrement)
         }
     }
 
     fun loadTodos(todoList: RecyclerView, filteredTodo: List<Todo>?){
         val db = DbServices(context)
-        val list: List<Todo>
-
-        if(filteredTodo == null){
-            list = db.getTodos()
-        } else {
-            list = filteredTodo
-        }
+        val list: List<Todo> = filteredTodo ?: db.getTodos()
 
         val adapter = CustomAdapterForTodos(context, list, db)
 
@@ -306,12 +266,45 @@ class DbServices(
         ItemTouchHelper(touchHelper).attachToRecyclerView(todoList)
     }
 
-    fun findTodoByName(name: String): List<Todo>{
-        val listTodo = ArrayList<Todo>()
+    fun filterService(name: String?, categoryId: String?, isFinished: String?): List<Todo>{
         val db = this.readableDatabase
-        val query = "SELECT * FROM $TABLE_TODOS WHERE $COLUMN_TODO_NAME LIKE ?"
-        val args = "%$name%"
-        val cursor = db.rawQuery(query, arrayOf(args))
+        val list = ArrayList<Todo>()
+
+        val whereClauses = ArrayList<String>()
+        val args = ArrayList<String>()
+
+        if(!name.isNullOrEmpty()){
+            whereClauses.add("$COLUMN_TODO_NAME LIKE ?")
+            args.add("%$name%")
+        }
+        if(!categoryId.isNullOrEmpty()){
+            if(categoryId != "999"){
+                whereClauses.add("$COLUMN_TODO_CATEGORY_ID = ?")
+                args.add(categoryId)
+            }
+        }
+        if(!isFinished.isNullOrEmpty()){
+            val isFinishedVal: String
+            if(isFinished == "Finalizadas"){
+                isFinishedVal = "1"
+                whereClauses.add("$COLUMN_TODO_IS_FINISHED = ?")
+                args.add(isFinishedVal)
+            } else if(isFinished == "Não finalizadas"){
+                isFinishedVal = "0"
+                whereClauses.add("$COLUMN_TODO_IS_FINISHED = ?")
+                args.add(isFinishedVal)
+            }
+        }
+
+        val whereClause = if(whereClauses.isNotEmpty()) whereClauses.joinToString(" AND ") else null
+
+        val query = if (!whereClause.isNullOrEmpty()){
+            "SELECT * FROM $TABLE_TODOS WHERE $whereClause"
+        } else {
+            "SELECT * FROM $TABLE_TODOS"
+        }
+
+        val cursor = db.rawQuery(query, args.toTypedArray())
 
         if(cursor.moveToFirst()){
             do{
@@ -325,11 +318,12 @@ class DbServices(
                     categoryId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TODO_CATEGORY_ID)),
                     isFinished = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TODO_IS_FINISHED)) == 1
                 )
-
-                listTodo.add(todo)
+                list.add(todo)
             } while(cursor.moveToNext())
         }
 
-        return listTodo
+        cursor.close()
+        db.close()
+        return list
     }
 }

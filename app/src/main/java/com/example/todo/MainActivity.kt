@@ -1,32 +1,18 @@
 package com.example.todo
 
 import android.app.AlertDialog
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.Spinner
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.todo.adapters.CustomAdapterForTodos
-import com.example.todo.entities.Category
 import com.example.todo.services.DbServices
-import com.example.todo.services.TouchHelper
 import com.example.todo.services.closeFabMenu
 import com.example.todo.services.createNotificationsChannel
 import com.example.todo.services.openFabMenu
-import com.example.todo.services.sendNotification
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
@@ -64,9 +50,12 @@ class MainActivity : AppCompatActivity() {
         addTodoBtn.setOnClickListener {
             intent = Intent(this, AddTodoFormsActivity::class.java)
             startActivity(intent)
+
+            isOpen = closeFabMenu(btnLayout)
         }
 
         clearBtn.setOnClickListener {
+            isOpen = closeFabMenu(btnLayout)
             val dialog = AlertDialog.Builder(this)
             dialog.setTitle("Alerta")
             dialog.setMessage("Você realmente deseja limpar todas as tarefas?")
@@ -82,6 +71,8 @@ class MainActivity : AppCompatActivity() {
         openSearchActBtn.setOnClickListener {
             val intent = Intent(this, SearchActivity::class.java)
             startActivity(intent)
+
+            isOpen = closeFabMenu(btnLayout)
         }
     }
 
