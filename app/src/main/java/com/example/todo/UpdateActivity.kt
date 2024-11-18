@@ -6,6 +6,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Spinner
 import android.widget.TextView
+import android.widget.TimePicker
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -39,15 +40,13 @@ class UpdateActivity : AppCompatActivity() {
         val categoriesDisplay = findViewById<Spinner>(R.id.categoriesUpdateList)
         val todoId = intent.getIntExtra("TODO_ID", -1)
         val todo = db.getTodoById(todoId)
+        val timePicker = findViewById<TimePicker>(R.id.timePicker)
+
+        timePicker.setIs24HourView(true)
 
         // seleção das views
         val nameUpdateInput = findViewById<EditText>(R.id.nameUpdateInput)
         val contentUpdateInput = findViewById<EditText>(R.id.contentUpdateInput)
-        val hoursUpdateInput = findViewById<EditText>(R.id.hoursUpdateInput)
-        val minutesUpdateInput = findViewById<EditText>(R.id.minutesUpdateInput)
-        val durationHoursUpdateInput = findViewById<EditText>(R.id.durationHoursUpdateInput)
-        val durationMinutesUpdateInput = findViewById<EditText>(R.id.durationMinutesUpdateInput)
-        val categoryIdVal = findViewById<TextView>(R.id.categoryidval)
         val btn_update = findViewById<Button>(R.id.btn_update)
 
         val adapter = ArrayAdapter<Category>(
@@ -60,23 +59,16 @@ class UpdateActivity : AppCompatActivity() {
         categoriesDisplay.adapter = adapter
 
         if (todo != null) {
-            // splitar horários
-            val hours = todo!!.startHour.split(":")
+            // splitar o horário
+            val hours = todo.startHour.split(":")
             val hour = hours[0]
             val minutes = hours[1]
-
-            // converter a duração
-            val durationHour = todo.duration.toInt() / 60
-            val durationMinutes = todo.duration.toInt() % 60
 
             // popular os inputs
             nameUpdateInput.setText(todo.name)
             contentUpdateInput.setText(todo.content)
-            hoursUpdateInput.setText(hour)
-            minutesUpdateInput.setText(minutes)
-            durationHoursUpdateInput.setText(durationHour.toString())
-            durationMinutesUpdateInput.setText(durationMinutes.toString())
-            categoryIdVal.text = todo.categoryId.toString()
+            timePicker.hour = hour.toInt()
+            timePicker.minute = minutes.toInt()
 
             val selectedCategoryIndex = list.indexOfFirst { it.id == todo.categoryId }
             if (selectedCategoryIndex != -1) {
@@ -87,46 +79,27 @@ class UpdateActivity : AppCompatActivity() {
                 // Pegar os valores atualizado
                 val selectedCategory = categoriesDisplay.selectedItem as Category
                 val todoName = nameUpdateInput.text.toString()
+                val updatedHour = timePicker.hour
+                val updatedMinutes = timePicker.minute
+                val startHour = convertTime(updatedHour.toString(), updatedMinutes.toString())
                 val todoContent = contentUpdateInput.text.toString()
                 val categoryId = selectedCategory.id
                 val errorMessages = mutableListOf<String>()
-                val startHourInputValidation = hoursUpdateInput.text.toString()
-                val durationHourInputValidation = durationHoursUpdateInput.text.toString()
-                val startMinutesInputValidation = durationMinutesUpdateInput.text.toString()
-                val durationMinutesInputValidation = durationMinutesUpdateInput.text.toString()
 
-                if (!hourValidation(startHourInputValidation)) {
-                    errorMessages.add("Hora de início inválida.")
-                }
-                if (!hourValidation(durationHourInputValidation)) {
-                    errorMessages.add("Duração de hora inválida.")
-                }
-                if (!minutesValidation(startMinutesInputValidation)) {
-                    errorMessages.add("Minutos de início inválidos.")
-                }
-                if (!minutesValidation(durationMinutesInputValidation)) {
-                    errorMessages.add("Minutos de duração inválidos.")
-                }
                 if(!textInputValidation(todoName)){
                     errorMessages.add("Nome da tarefa inválida.")
                 }
 
                 sendValidationMessages(this, errorMessages)
 
-                if(hourValidation(startHourInputValidation) && hourValidation(durationHourInputValidation) && minutesValidation(startMinutesInputValidation) && minutesValidation(durationMinutesInputValidation)
-                    && textInputValidation(todoName)){
-                    val startHour = convertTime(startHourInputValidation, startMinutesInputValidation)
-                    val duration = (durationHourInputValidation.toInt() * 60) + durationMinutesInputValidation.toInt()
-
-                    // Validar os textos
+                if(textInputValidation(todoName)){
                     val updatedTodo = Todo(
                         id = todoId,
                         name = todoName,
                         content = todoContent,
                         categoryId = categoryId,
-                        duration = duration.toString(),
-                        isFinished = todo.isFinished,
                         startHour = startHour,
+                        isFinished = todo.isFinished,
                         creationDate = todo.creationDate
                     )
 
@@ -134,8 +107,6 @@ class UpdateActivity : AppCompatActivity() {
                     finish()
                     }
                 }
-
-
             }
         }
     }

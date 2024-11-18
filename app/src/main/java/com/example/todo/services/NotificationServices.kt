@@ -13,6 +13,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.provider.Settings
 import android.widget.Button
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -100,5 +101,34 @@ fun sendDialog(context: Context, message: String, title: String){
         .setMessage(message)
         .setPositiveButton("Entendido", null)
         .create()
+        .show()
+}
+
+fun isHeadUpAllowed(context: Context, channelId: String): Boolean{
+    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val channel = notificationManager.getNotificationChannel(channelId)
+        return channel?.importance == NotificationManager.IMPORTANCE_HIGH
+    }
+    return true
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun redirectToNotificationsSettings(context: Context){
+    val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+        putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+    }
+    context.startActivity(intent)
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun createAlertDialogForNotificationSettings(context: Context){
+    AlertDialog.Builder(context)
+        .setTitle("Permitir notificações")
+        .setMessage("Para garantir que as notificações estejam ativadas, habilite elas")
+        .setPositiveButton("Ir para configurações") { _, _ ->
+            redirectToNotificationsSettings(context)
+        }
+        .setNegativeButton("Cancelar", null)
         .show()
 }

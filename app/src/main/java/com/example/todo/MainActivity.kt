@@ -2,20 +2,25 @@ package com.example.todo
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.widget.LinearLayout
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todo.services.DbServices
 import com.example.todo.services.closeFabMenu
+import com.example.todo.services.createAlertDialogForNotificationSettings
 import com.example.todo.services.createNotificationsChannel
+import com.example.todo.services.isHeadUpAllowed
 import com.example.todo.services.openFabMenu
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -37,6 +42,10 @@ class MainActivity : AppCompatActivity() {
         val btnLayout = findViewById<LinearLayout>(R.id.buttonLayout)
         btnLayout.bringToFront()
 
+        if(!isHeadUpAllowed(this, "channel_id")){
+            createAlertDialogForNotificationSettings(this)
+        }
+
         menuBtn.setOnClickListener {
             if(isOpen){
                 isOpen = closeFabMenu(btnLayout)
@@ -52,10 +61,12 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
 
             isOpen = closeFabMenu(btnLayout)
+            menuBtn.setImageResource(R.drawable.options_lines_svgrepo_com)
         }
 
         clearBtn.setOnClickListener {
             isOpen = closeFabMenu(btnLayout)
+            menuBtn.setImageResource(R.drawable.options_lines_svgrepo_com)
             val dialog = AlertDialog.Builder(this)
             dialog.setTitle("Alerta")
             dialog.setMessage("Você realmente deseja limpar todas as tarefas?")
@@ -73,6 +84,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
 
             isOpen = closeFabMenu(btnLayout)
+            menuBtn.setImageResource(R.drawable.options_lines_svgrepo_com)
         }
     }
 

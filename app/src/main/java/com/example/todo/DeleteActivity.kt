@@ -32,13 +32,11 @@ class DeleteActivity : AppCompatActivity() {
         val taskName = findViewById<TextView>(R.id.task_name)
         val taskContent = findViewById<TextView>(R.id.task_content)
         val taskStartHour = findViewById<TextView>(R.id.task_start_hour)
-        val taskDuration = findViewById<TextView>(R.id.task_duration)
         val categoriaName = findViewById<TextView>(R.id.categoria)
         val confirmDeleteButton = findViewById<Button>(R.id.confirm_delete_button)
 
         taskName.text = todo?.name
         taskContent.text = todo?.content
-        taskDuration.text = todo?.duration
         taskStartHour.text = todo?.startHour
         categoriaName.text = category?.name
 

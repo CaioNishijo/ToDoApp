@@ -19,7 +19,7 @@ class DbServices(
 
     companion object {
         const val DATABASE_NAME = "TodoApp.db"
-        const val DATABASE_VERSION = 2
+        const val DATABASE_VERSION = 3
 
         // Tabela todo
         const val TABLE_TODOS = "tb_todos"
@@ -28,7 +28,6 @@ class DbServices(
         const val COLUMN_TODO_CONTENT = "todo_content"
         const val COLUMN_TODO_CREATION_DATE = "todo_creation_date"
         const val COLUMN_TODO_START_HOUR = "todo_start_hour"
-        const val COLUMN_TODO_DURATION = "todo_duration"
         const val COLUMN_TODO_CATEGORY_ID = "todo_category_id"
         const val COLUMN_TODO_IS_FINISHED = "todo_is_finished"
 
@@ -46,7 +45,6 @@ class DbServices(
                 $COLUMN_TODO_CONTENT TEXT,
                 $COLUMN_TODO_CREATION_DATE DATETIME DEFAULT CURRENT_TIMESTAMP,
                 $COLUMN_TODO_START_HOUR TEXT,
-                $COLUMN_TODO_DURATION INTEGER,
                 $COLUMN_TODO_CATEGORY_ID INTEGER,
                 $COLUMN_TODO_IS_FINISHED INTEGER,
                 FOREIGN KEY($COLUMN_TODO_CATEGORY_ID) REFERENCES $TABLE_CATEGORIES($COLUMN_CATEGORY_ID)
@@ -76,7 +74,6 @@ class DbServices(
         todoName: String,
         todoContent: String,
         todoStartHour: String,
-        todoDuration: Int,
         todoCategoryId: Int,
         todoIsFinished: Boolean
     ) {
@@ -86,7 +83,6 @@ class DbServices(
         contentValues.put(COLUMN_TODO_NAME, todoName)
         contentValues.put(COLUMN_TODO_CONTENT, todoContent)
         contentValues.put(COLUMN_TODO_START_HOUR, todoStartHour)
-        contentValues.put(COLUMN_TODO_DURATION, todoDuration)
         contentValues.put(COLUMN_TODO_CATEGORY_ID, todoCategoryId)
         contentValues.put(COLUMN_TODO_IS_FINISHED, todoIsFinished)
 
@@ -138,10 +134,9 @@ class DbServices(
                 val content = cursor.getString(2)
                 val creationDate = cursor.getString(3)
                 val startHour = cursor.getString(4)
-                val duration = cursor.getString(5)
-                val categoryId = cursor.getInt(6)
-                val isFinished = cursor.getInt(7) == 1
-                lista.add(Todo(id, name, content, creationDate, startHour, duration, categoryId, isFinished))
+                val categoryId = cursor.getInt(5)
+                val isFinished = cursor.getInt(6) == 1
+                lista.add(Todo(id, name, content, creationDate, startHour, categoryId, isFinished))
             } while(cursor.moveToNext())
         }
         cursor.close()
@@ -160,7 +155,6 @@ class DbServices(
                 categoryId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TODO_CATEGORY_ID)),
                 content = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_CONTENT)),
                 creationDate = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_CREATION_DATE)),
-                duration = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_DURATION)),
                 isFinished = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TODO_IS_FINISHED)) == 1,
                 startHour = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_START_HOUR))
             )
@@ -178,7 +172,6 @@ class DbServices(
         val contentValues = ContentValues().apply {
             put(COLUMN_TODO_NAME, updatedTodo.name)
             put(COLUMN_TODO_CONTENT, updatedTodo.content)
-            put(COLUMN_TODO_DURATION, updatedTodo.duration)
             put(COLUMN_TODO_IS_FINISHED, updatedTodo.isFinished)
             put(COLUMN_TODO_START_HOUR, updatedTodo.startHour)
             put(COLUMN_TODO_CATEGORY_ID, updatedTodo.categoryId)
@@ -314,7 +307,6 @@ class DbServices(
                     content = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_CONTENT)),
                     creationDate = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_CREATION_DATE)),
                     startHour = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_START_HOUR)),
-                    duration = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TODO_DURATION)),
                     categoryId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TODO_CATEGORY_ID)),
                     isFinished = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TODO_IS_FINISHED)) == 1
                 )
@@ -325,5 +317,21 @@ class DbServices(
         cursor.close()
         db.close()
         return list
+    }
+
+    fun verifyIfAlreadyHaveAScheduling(creationDate: String, startHour: String): Boolean{
+        val db = this.readableDatabase
+        val query = "SELECT * FROM $TABLE_TODOS WHERE DATE($COLUMN_TODO_CREATION_DATE) = ? AND $COLUMN_TODO_START_HOUR = ?"
+        val cursor = db.rawQuery(query, arrayOf(creationDate, startHour))
+
+        if(cursor.moveToFirst()){
+            db.close()
+            cursor.close()
+            return true
+        } else {
+            db.close()
+            cursor.close()
+            return false
+        }
     }
 }

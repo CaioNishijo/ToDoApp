@@ -6,7 +6,6 @@ data class Todo(
     val content: String,
     val creationDate: String?,
     val startHour: String,
-    val duration: String,
     val categoryId: Int,
     var isFinished: Boolean
 )
