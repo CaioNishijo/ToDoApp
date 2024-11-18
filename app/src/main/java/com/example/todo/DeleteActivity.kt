@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.todo.services.DbServices
+import com.example.todo.services.cancelAlarm
 import org.w3c.dom.Text
 
 class DeleteActivity : AppCompatActivity() {
@@ -42,6 +43,7 @@ class DeleteActivity : AppCompatActivity() {
 
         confirmDeleteButton.setOnClickListener {
             db.deleteTodo(todoId)
+            cancelAlarm(this, todoId)
             finish()
         }
     }

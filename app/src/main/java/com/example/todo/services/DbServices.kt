@@ -76,7 +76,7 @@ class DbServices(
         todoStartHour: String,
         todoCategoryId: Int,
         todoIsFinished: Boolean
-    ) {
+    ): Long {
         val db = this.writableDatabase
         val contentValues = ContentValues()
 
@@ -91,7 +91,9 @@ class DbServices(
             Toast.makeText(context, "Falha ao adicionar o todo", Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(context, "Todo adicionado com sucesso", Toast.LENGTH_SHORT).show()
+            return result
         }
+        return -1
     }
 
     private fun insertCategoriesDefaultValues(p0: SQLiteDatabase?){
@@ -254,7 +256,7 @@ class DbServices(
         todoList.adapter = adapter
         todoList.layoutManager = LinearLayoutManager(context)
 
-        val touchHelper = TouchHelper(adapter, db)
+        val touchHelper = TouchHelper(adapter, db, context)
 
         ItemTouchHelper(touchHelper).attachToRecyclerView(todoList)
     }

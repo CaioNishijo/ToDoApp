@@ -1,12 +1,14 @@
 package com.example.todo.services
 
+import android.content.Context
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todo.adapters.CustomAdapterForTodos
 
 class TouchHelper(
     private val adapter: CustomAdapterForTodos,
-    private val db: DbServices
+    private val db: DbServices,
+    private val context: Context
 ) : ItemTouchHelper.Callback() {
 
     override fun getMovementFlags(
@@ -33,5 +35,6 @@ class TouchHelper(
         }
 
         db.deleteTodo(todoId)
+        cancelAlarm(context, todoId)
     }
 }

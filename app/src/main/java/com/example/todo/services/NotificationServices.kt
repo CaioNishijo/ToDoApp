@@ -70,10 +70,10 @@ NotificationCompat.Action?){
 }
 
 @SuppressLint("ScheduleExactAlarm")
-fun setAlarmForNotification(context: Context, intervalInMillis: Long, content: String){
+fun setAlarmForNotification(context: Context, requestCode: Long, intervalInMillis: Long, content: String){
     val intent = Intent(context, NotificationReceiver::class.java)
     intent.putExtra("TITLE", content)
-    val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+    val pendingIntent = PendingIntent.getBroadcast(context, requestCode.toInt(), intent, PendingIntent.FLAG_IMMUTABLE)
 
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     alarmManager.setExact(AlarmManager.RTC_WAKEUP, intervalInMillis, pendingIntent)
@@ -131,4 +131,18 @@ fun createAlertDialogForNotificationSettings(context: Context){
         }
         .setNegativeButton("Cancelar", null)
         .show()
+}
+
+fun cancelAlarm(context: Context, todoId: Int){
+    val intent = Intent(context, NotificationReceiver::class.java)
+
+    val pendingIntent = PendingIntent.getBroadcast(
+        context,
+        todoId,
+        intent,
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
+
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    alarmManager.cancel(pendingIntent)
 }

@@ -103,7 +103,7 @@ class AddTodoFormsActivity : AppCompatActivity() {
         sendValidationMessages(this, errorMessages)
 
         if(textInputValidation(todoName) && !db.verifyIfAlreadyHaveAScheduling(date, startHour)) {
-            db.createTodo(
+            val id = db.createTodo(
                 todoName,
                 contentInput.text.toString(),
                 startHour,
@@ -115,7 +115,7 @@ class AddTodoFormsActivity : AppCompatActivity() {
 
             val triggerTime = System.currentTimeMillis() + intervalInMillis
 
-            setAlarmForNotification(this, triggerTime, todoName)
+            setAlarmForNotification(this, id, triggerTime, todoName)
 
             finish()
         }
