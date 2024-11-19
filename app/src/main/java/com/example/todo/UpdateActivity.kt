@@ -14,13 +14,18 @@ import androidx.core.view.WindowInsetsCompat
 import com.example.todo.services.DbServices
 import com.example.todo.entities.Category
 import com.example.todo.entities.Todo
+import com.example.todo.services.cancelAlarm
 import com.example.todo.services.convertTime
 import com.example.todo.services.createNotificationsChannel
 import com.example.todo.services.hourValidation
 import com.example.todo.services.minutesValidation
 import com.example.todo.services.sendDialog
 import com.example.todo.services.sendValidationMessages
+import com.example.todo.services.setAlarmForNotification
 import com.example.todo.services.textInputValidation
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class UpdateActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,6 +90,15 @@ class UpdateActivity : AppCompatActivity() {
                 val todoContent = contentUpdateInput.text.toString()
                 val categoryId = selectedCategory.id
                 val errorMessages = mutableListOf<String>()
+                val horaAtual = Calendar.getInstance()
+                val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+                val horaInformada = Calendar.getInstance()
+                horaInformada.time = sdf.parse(startHour)
+
+                horaInformada.set(Calendar.YEAR, horaAtual.get(Calendar.YEAR))
+                horaInformada.set(Calendar.MONTH, horaAtual.get(Calendar.MONTH))
+                horaInformada.set(Calendar.DAY_OF_MONTH, horaAtual.get(Calendar.DAY_OF_MONTH))
+
 
                 if(!textInputValidation(todoName)){
                     errorMessages.add("Nome da tarefa inválida.")
@@ -104,6 +118,14 @@ class UpdateActivity : AppCompatActivity() {
                     )
 
                     db.updateTodo(todoId, updatedTodo)
+                    cancelAlarm(this, todoId)
+
+                    val intervalInMillis = horaInformada.timeInMillis - horaAtual.timeInMillis
+
+                    val triggerTime = System.currentTimeMillis() + intervalInMillis
+
+                    setAlarmForNotification(this, todoId.toLong(), triggerTime, todoName)
+
                     finish()
                     }
                 }

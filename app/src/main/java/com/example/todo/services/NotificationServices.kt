@@ -39,9 +39,8 @@ fun createNotificationsChannel(context: Context){
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 fun sendNotification(context: Context, notificationTitle: String, notificationContent: String, action:
-NotificationCompat.Action?){
+NotificationCompat.Action?, requestCode: Long){
     val channelId = "channel_id"
-    val notificationId = 1
 
     val builder = NotificationCompat.Builder(context, channelId)
         .setSmallIcon(R.drawable.baseline_notifications_24)
@@ -53,7 +52,7 @@ NotificationCompat.Action?){
         .setDefaults(Notification.DEFAULT_SOUND or Notification.DEFAULT_VIBRATE)
 
     with(NotificationManagerCompat.from(context)) {
-        if (ActivityCompat.checkSelfPermission(
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.POST_NOTIFICATIONS
             ) != PackageManager.PERMISSION_GRANTED
@@ -61,11 +60,11 @@ NotificationCompat.Action?){
             ActivityCompat.requestPermissions(
                 context as Activity,
                 arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                1
+                requestCode.toInt()
             )
             return
         }
-        notify(notificationId, builder.build())
+        notify(requestCode.toInt(), builder.build())
     }
 }
 
@@ -73,6 +72,7 @@ NotificationCompat.Action?){
 fun setAlarmForNotification(context: Context, requestCode: Long, intervalInMillis: Long, content: String){
     val intent = Intent(context, NotificationReceiver::class.java)
     intent.putExtra("TITLE", content)
+    intent.putExtra("REQUESTCODE", requestCode)
     val pendingIntent = PendingIntent.getBroadcast(context, requestCode.toInt(), intent, PendingIntent.FLAG_IMMUTABLE)
 
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -80,15 +80,15 @@ fun setAlarmForNotification(context: Context, requestCode: Long, intervalInMilli
 }
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-fun sendClickOnNotification(context: Context, title: String, content: String){
+fun sendClickOnNotification(context: Context, title: String, content: String, requestCode: Long){
     val intent = Intent(context, MainActivity::class.java)
-    val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+    val pendingIntent = PendingIntent.getActivity(context, requestCode.toInt(), intent, PendingIntent.FLAG_IMMUTABLE)
 
     val action = NotificationCompat.Action.Builder(
         R.drawable.baseline_open_in_full_24, "Abrir tarefas", pendingIntent
     ).build()
 
-    sendNotification(context, title, content, action)
+    sendNotification(context, title, content, action, requestCode)
 }
 
 fun sendToast(message: String, context: Context){
@@ -140,7 +140,7 @@ fun cancelAlarm(context: Context, todoId: Int){
         context,
         todoId,
         intent,
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
 
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager

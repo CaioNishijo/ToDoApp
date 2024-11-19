@@ -2,12 +2,14 @@ package com.example.todo
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.widget.LinearLayout
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -18,6 +20,7 @@ import com.example.todo.services.createNotificationsChannel
 import com.example.todo.services.isHeadUpAllowed
 import com.example.todo.services.openFabMenu
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import android.Manifest
 
 class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -31,6 +34,8 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        val REQUEST_CODE = 1
+
         createNotificationsChannel(this)
         var isOpen = false
         val db = DbServices(this)
@@ -42,8 +47,12 @@ class MainActivity : AppCompatActivity() {
         val btnLayout = findViewById<LinearLayout>(R.id.buttonLayout)
         btnLayout.bringToFront()
 
-        if(!isHeadUpAllowed(this, "channel_id")){
-            createAlertDialogForNotificationSettings(this)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQUEST_CODE
+            )
         }
 
         menuBtn.setOnClickListener {

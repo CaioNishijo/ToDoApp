@@ -11,7 +11,8 @@ class NotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
 
         val title = intent?.getStringExtra("TITLE") ?: "Notificação"
+        val requestCode = intent?.getLongExtra("REQUESTCODE", -1)
 
-        sendClickOnNotification(context!!,title,"Você tem uma tarefa para iniciar agora")
+        sendClickOnNotification(context!!,title,"Você tem uma tarefa para iniciar agora", requestCode!!.toLong())
     }
 }
