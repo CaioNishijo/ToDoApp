@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.todo.DeleteActivity
 import com.example.todo.R
 import com.example.todo.UpdateActivity
+import com.example.todo.databinding.TodoRowBinding
 import com.example.todo.entities.Todo
 import com.example.todo.services.DbServices
 

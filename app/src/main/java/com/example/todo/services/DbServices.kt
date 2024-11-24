@@ -247,7 +247,7 @@ class DbServices(
         }
     }
 
-    fun loadTodos(todoList: RecyclerView, filteredTodo: List<Todo>?){
+    fun loadTodos(todoList: RecyclerView, filteredTodo: List<Todo>?): Boolean{
         val db = DbServices(context)
         val list: List<Todo> = filteredTodo ?: db.getTodos()
 
@@ -259,6 +259,12 @@ class DbServices(
         val touchHelper = TouchHelper(adapter, db, context)
 
         ItemTouchHelper(touchHelper).attachToRecyclerView(todoList)
+
+        if(list.isEmpty()){
+            return false
+        }
+
+        return true
     }
 
     fun filterService(name: String?, categoryId: String?, isFinished: String?): List<Todo>{

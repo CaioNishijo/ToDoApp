@@ -2,7 +2,6 @@ package com.example.todo.services
 
 import android.view.View
 import android.widget.LinearLayout
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 fun openFabMenu(verticaLayout: LinearLayout): Boolean {
     verticaLayout.visibility = View.VISIBLE

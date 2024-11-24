@@ -16,6 +16,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.todo.databinding.ActivityAddTodoFormsBinding
 import com.example.todo.entities.Category
 import com.example.todo.services.DbServices
 import com.example.todo.services.convertTime
@@ -32,21 +33,20 @@ import java.util.Calendar
 import java.util.Locale
 
 class AddTodoFormsActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityAddTodoFormsBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityAddTodoFormsBinding.inflate(layoutInflater)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_add_todo_forms)
+        setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        val categoriesList = findViewById<Spinner>(R.id.categoriesList)
-        val submitBtn = findViewById<Button>(R.id.btn_submit)
-        val timePicker = findViewById<TimePicker>(R.id.timePicker)
-
-        timePicker.setIs24HourView(true)
+        binding.timePicker.setIs24HourView(true)
 
         val db = DbServices(this)
 
@@ -58,24 +58,20 @@ class AddTodoFormsActivity : AppCompatActivity() {
             categories
         )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        categoriesList.adapter = adapter
+        binding.categoriesList.adapter = adapter
 
-       submitBtn.setOnClickListener{
-           onClickSubmit(db, this, categoriesList)
+       binding.btnSubmit.setOnClickListener{
+           onClickSubmit(db, this, binding.categoriesList)
        }
     }
 
     fun onClickSubmit(db: DbServices, context: Context, categoriesList: Spinner){
-        val nameInput = findViewById<EditText>(R.id.nameInput)
-        val contentInput = findViewById<EditText>(R.id.contentInput)
-        val timePicker = findViewById<TimePicker>(R.id.timePicker)
-
         val selectedCategory = categoriesList.selectedItem as Category
 
-        val todoName = nameInput.text.toString()
-        val todoContent = contentInput.text.toString()
-        val selectedHour = timePicker.hour
-        val selectedMinute = timePicker.minute
+        val todoName = binding.editTextName.text.toString()
+        val todoContent = binding.editTextContent.text.toString()
+        val selectedHour = binding.timePicker.hour
+        val selectedMinute = binding.timePicker.minute
         val startHour = convertTime(selectedHour.toString(), selectedMinute.toString())
         val categoryId = selectedCategory.id
         val errorMessages = mutableListOf<String>()
@@ -105,7 +101,7 @@ class AddTodoFormsActivity : AppCompatActivity() {
         if(textInputValidation(todoName) && !db.verifyIfAlreadyHaveAScheduling(date, startHour)) {
             val id = db.createTodo(
                 todoName,
-                contentInput.text.toString(),
+                binding.editTextContent.text.toString(),
                 startHour,
                 categoryId,
                 false

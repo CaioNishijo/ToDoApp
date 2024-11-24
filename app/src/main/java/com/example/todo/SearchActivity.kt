@@ -15,14 +15,18 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.example.todo.databinding.ActivitySearchBinding
 import com.example.todo.entities.Category
 import com.example.todo.services.DbServices
 
 class SearchActivity : AppCompatActivity() {
+    private lateinit var binding: ActivitySearchBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivitySearchBinding.inflate(layoutInflater)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_search)
+        setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -31,14 +35,9 @@ class SearchActivity : AppCompatActivity() {
 
         val db = DbServices(this)
         var haveInput: Boolean
-        val clearBtn = findViewById<ImageView>(R.id.clearBtn)
-        val categoriesSpinner = findViewById<Spinner>(R.id.categoriesSpinner)
-        val isFinishedSpinner = findViewById<Spinner>(R.id.isFinishedSpinner)
         val isFinishedSpinnerItens = listOf("---", "Finalizadas", "Não finalizadas")
-        val rv = findViewById<RecyclerView>(R.id.todoList)
         val categoriesList = db.getCategorias()
         val mutableCategoriesList = categoriesList.toMutableList()
-        val searchInput = findViewById<EditText>(R.id.searchInput)
         val noOption = Category(
             id = 999,
             name = "---"
@@ -52,7 +51,7 @@ class SearchActivity : AppCompatActivity() {
         )
 
         isFinishedAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        isFinishedSpinner.adapter = isFinishedAdapter
+        binding.isFinishedSpinner.adapter = isFinishedAdapter
 
         val categoryAdapter = ArrayAdapter<Category>(
             this,
@@ -60,24 +59,24 @@ class SearchActivity : AppCompatActivity() {
             mutableCategoriesList
         )
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        categoriesSpinner.adapter = categoryAdapter
+        binding.categoriesSpinner.adapter = categoryAdapter
 
-        db.loadTodos(rv, null)
+        db.loadTodos(binding.todoList, null)
 
-        categoriesSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        binding.categoriesSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
                 view: View?,
                 position: Int,
                 id: Long
             ) {
-                val name = searchInput.text.toString()
-                val selectedCategory = categoriesSpinner.selectedItem as Category
+                val name = binding.searchInput.text.toString()
+                val selectedCategory = binding.categoriesSpinner.selectedItem as Category
                 val categoryId = selectedCategory.id
-                val selectedIsFinished = isFinishedSpinner.selectedItem as String
+                val selectedIsFinished = binding.isFinishedSpinner.selectedItem as String
 
                 val list = db.filterService(name, categoryId.toString(), selectedIsFinished)
-                db.loadTodos(rv, list)
+                db.loadTodos(binding.todoList, list)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -85,20 +84,20 @@ class SearchActivity : AppCompatActivity() {
             }
         }
 
-        isFinishedSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        binding.isFinishedSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
                 view: View?,
                 position: Int,
                 id: Long
             ) {
-                val name = searchInput.text.toString()
-                val selectedCategory = categoriesSpinner.selectedItem as Category
+                val name = binding.searchInput.text.toString()
+                val selectedCategory = binding.categoriesSpinner.selectedItem as Category
                 val categoryId = selectedCategory.id
-                val selectedIsFinished = isFinishedSpinner.selectedItem as String
+                val selectedIsFinished = binding.isFinishedSpinner.selectedItem as String
 
                 val list = db.filterService(name, categoryId.toString(), selectedIsFinished)
-                db.loadTodos(rv, list)
+                db.loadTodos(binding.todoList, list)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -106,17 +105,17 @@ class SearchActivity : AppCompatActivity() {
             }
         }
 
-        searchInput.addTextChangedListener(object : TextWatcher {
+        binding.searchInput.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 haveInput = true
-                updateClearBtn(haveInput, clearBtn, searchInput)
-                val name = searchInput.text.toString()
-                val selectedCategory = categoriesSpinner.selectedItem as Category
+                updateClearBtn(haveInput, binding.clearBtn, binding.searchInput)
+                val name = binding.searchInput.text.toString()
+                val selectedCategory = binding.categoriesSpinner.selectedItem as Category
                 val categoryId = selectedCategory.id
-                val selectedIsFinished = isFinishedSpinner.selectedItem as String
+                val selectedIsFinished = binding.isFinishedSpinner.selectedItem as String
 
                 val list = db.filterService(name, categoryId.toString(), selectedIsFinished)
-                db.loadTodos(rv, list)
+                db.loadTodos(binding.todoList, list)
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -128,10 +127,10 @@ class SearchActivity : AppCompatActivity() {
             }
         })
 
-        clearBtn.setOnClickListener {
+        binding.clearBtn.setOnClickListener {
             haveInput = false
-            searchInput.setText("")
-            updateClearBtn(haveInput, clearBtn, searchInput)
+            binding.searchInput.setText("")
+            updateClearBtn(haveInput, binding.clearBtn, binding.searchInput)
         }
     }
 

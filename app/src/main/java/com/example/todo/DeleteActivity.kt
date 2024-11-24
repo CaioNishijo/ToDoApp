@@ -7,15 +7,19 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.todo.databinding.ActivityDeleteBinding
 import com.example.todo.services.DbServices
 import com.example.todo.services.cancelAlarm
 import org.w3c.dom.Text
 
 class DeleteActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityDeleteBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityDeleteBinding.inflate(layoutInflater)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_delete)
+        setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -30,18 +34,12 @@ class DeleteActivity : AppCompatActivity() {
 
         val category = db.getCategoriaById(todo!!.categoryId)
 
-        val taskName = findViewById<TextView>(R.id.task_name)
-        val taskContent = findViewById<TextView>(R.id.task_content)
-        val taskStartHour = findViewById<TextView>(R.id.task_start_hour)
-        val categoriaName = findViewById<TextView>(R.id.categoria)
-        val confirmDeleteButton = findViewById<Button>(R.id.confirm_delete_button)
+        binding.taskName.text = todo?.name
+        binding.taskContent.text = todo?.content
+        binding.taskStartHour.text = todo?.startHour
+        binding.categoria.text = category?.name
 
-        taskName.text = todo?.name
-        taskContent.text = todo?.content
-        taskStartHour.text = todo?.startHour
-        categoriaName.text = category?.name
-
-        confirmDeleteButton.setOnClickListener {
+        binding.confirmDeleteButton.setOnClickListener {
             db.deleteTodo(todoId)
             cancelAlarm(this, todoId)
             finish()

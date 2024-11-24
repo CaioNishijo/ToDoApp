@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.todo.databinding.ActivityUpdateBinding
 import com.example.todo.services.DbServices
 import com.example.todo.entities.Category
 import com.example.todo.entities.Todo
@@ -28,10 +29,13 @@ import java.util.Calendar
 import java.util.Locale
 
 class UpdateActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityUpdateBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityUpdateBinding.inflate(layoutInflater)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_update)
+        setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -42,17 +46,10 @@ class UpdateActivity : AppCompatActivity() {
         val db = DbServices(this)
         val intent = intent
         val list = db.getCategorias()
-        val categoriesDisplay = findViewById<Spinner>(R.id.categoriesUpdateList)
         val todoId = intent.getIntExtra("TODO_ID", -1)
         val todo = db.getTodoById(todoId)
-        val timePicker = findViewById<TimePicker>(R.id.timePicker)
 
-        timePicker.setIs24HourView(true)
-
-        // seleção das views
-        val nameUpdateInput = findViewById<EditText>(R.id.nameUpdateInput)
-        val contentUpdateInput = findViewById<EditText>(R.id.contentUpdateInput)
-        val btn_update = findViewById<Button>(R.id.btn_update)
+        binding.timePicker.setIs24HourView(true)
 
         val adapter = ArrayAdapter<Category>(
             this,
@@ -61,7 +58,7 @@ class UpdateActivity : AppCompatActivity() {
         )
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        categoriesDisplay.adapter = adapter
+        binding.categoriesUpdateList.adapter = adapter
 
         if (todo != null) {
             // splitar o horário
@@ -70,24 +67,24 @@ class UpdateActivity : AppCompatActivity() {
             val minutes = hours[1]
 
             // popular os inputs
-            nameUpdateInput.setText(todo.name)
-            contentUpdateInput.setText(todo.content)
-            timePicker.hour = hour.toInt()
-            timePicker.minute = minutes.toInt()
+            binding.nameUpdateInput.setText(todo.name)
+            binding.contentUpdateInput.setText(todo.content)
+            binding.timePicker.hour = hour.toInt()
+            binding.timePicker.minute = minutes.toInt()
 
             val selectedCategoryIndex = list.indexOfFirst { it.id == todo.categoryId }
             if (selectedCategoryIndex != -1) {
-                categoriesDisplay.setSelection(selectedCategoryIndex)
+                binding.categoriesUpdateList.setSelection(selectedCategoryIndex)
             }
 
-            btn_update.setOnClickListener {
+            binding.btnUpdate.setOnClickListener {
                 // Pegar os valores atualizado
-                val selectedCategory = categoriesDisplay.selectedItem as Category
-                val todoName = nameUpdateInput.text.toString()
-                val updatedHour = timePicker.hour
-                val updatedMinutes = timePicker.minute
+                val selectedCategory = binding.categoriesUpdateList.selectedItem as Category
+                val todoName = binding.nameUpdateInput.text.toString()
+                val updatedHour = binding.timePicker.hour
+                val updatedMinutes = binding.timePicker.minute
                 val startHour = convertTime(updatedHour.toString(), updatedMinutes.toString())
-                val todoContent = contentUpdateInput.text.toString()
+                val todoContent = binding.contentUpdateInput.text.toString()
                 val categoryId = selectedCategory.id
                 val errorMessages = mutableListOf<String>()
                 val horaAtual = Calendar.getInstance()

@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.widget.LinearLayout
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -15,19 +14,22 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todo.services.DbServices
 import com.example.todo.services.closeFabMenu
-import com.example.todo.services.createAlertDialogForNotificationSettings
 import com.example.todo.services.createNotificationsChannel
-import com.example.todo.services.isHeadUpAllowed
 import com.example.todo.services.openFabMenu
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.Manifest
+import android.view.View
+import android.widget.TextView
+import com.example.todo.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -39,13 +41,7 @@ class MainActivity : AppCompatActivity() {
         createNotificationsChannel(this)
         var isOpen = false
         val db = DbServices(this)
-        val addTodoBtn = findViewById<FloatingActionButton>(R.id.add_todo)
-        val clearBtn = findViewById<FloatingActionButton>(R.id.clear_btn)
-        val rv = findViewById<RecyclerView>(R.id.todo_list)
-        val openSearchActBtn = findViewById<FloatingActionButton>(R.id.openSearchActBtn)
-        val menuBtn = findViewById<FloatingActionButton>(R.id.menu_button)
-        val btnLayout = findViewById<LinearLayout>(R.id.buttonLayout)
-        btnLayout.bringToFront()
+        binding.layoutButtons.bringToFront()
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
             != PackageManager.PERMISSION_GRANTED) {
@@ -55,53 +51,66 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        menuBtn.setOnClickListener {
+        binding.menuButton.setOnClickListener {
             if(isOpen){
-                isOpen = closeFabMenu(btnLayout)
-                menuBtn.setImageResource(R.drawable.options_lines_svgrepo_com)
+                isOpen = closeFabMenu(binding.layoutButtons)
+                binding.menuButton.setImageResource(R.drawable.options_lines_svgrepo_com)
             } else {
-                isOpen = openFabMenu(btnLayout)
-                menuBtn.setImageResource(R.drawable.close_svgrepo_com)
+                isOpen = openFabMenu(binding.layoutButtons)
+                binding.menuButton.setImageResource(R.drawable.close_svgrepo_com)
             }
         }
 
-        addTodoBtn.setOnClickListener {
+        binding.btnOpenAddForms.setOnClickListener {
             intent = Intent(this, AddTodoFormsActivity::class.java)
             startActivity(intent)
 
-            isOpen = closeFabMenu(btnLayout)
-            menuBtn.setImageResource(R.drawable.options_lines_svgrepo_com)
+            isOpen = closeFabMenu(binding.layoutButtons)
+            binding.menuButton.setImageResource(R.drawable.options_lines_svgrepo_com)
         }
 
-        clearBtn.setOnClickListener {
-            isOpen = closeFabMenu(btnLayout)
-            menuBtn.setImageResource(R.drawable.options_lines_svgrepo_com)
+        binding.btnClearAll.setOnClickListener {
+            isOpen = closeFabMenu(binding.layoutButtons)
+            binding.menuButton.setImageResource(R.drawable.options_lines_svgrepo_com)
             val dialog = AlertDialog.Builder(this)
             dialog.setTitle("Alerta")
             dialog.setMessage("Você realmente deseja limpar todas as tarefas?")
             dialog.setPositiveButton("Sim") { _, _ ->
                 db.clearAll()
 
-                db.loadTodos(rv, null)
+                val noListText = findViewById<TextView>(R.id.empty_title)
+                val haveList = db.loadTodos(binding.todoList, null)
+
+                updateEmptyTitle(noListText, haveList)
             }
             dialog.setNegativeButton("Cancelar", null)
             dialog.show()
         }
 
-        openSearchActBtn.setOnClickListener {
+        binding.btnOpenSearchActivity.setOnClickListener {
             val intent = Intent(this, SearchActivity::class.java)
             startActivity(intent)
 
-            isOpen = closeFabMenu(btnLayout)
-            menuBtn.setImageResource(R.drawable.options_lines_svgrepo_com)
+            isOpen = closeFabMenu(binding.layoutButtons)
+            binding.menuButton.setImageResource(R.drawable.options_lines_svgrepo_com)
         }
     }
 
     override fun onResume() {
         super.onResume()
+        val noListText = findViewById<TextView>(R.id.empty_title)
         val db = DbServices(this)
         val rv = findViewById<RecyclerView>(R.id.todo_list)
 
-        db.loadTodos(rv, null)
+        val haveList = db.loadTodos(rv, null)
+        updateEmptyTitle(noListText, haveList)
+    }
+
+    fun updateEmptyTitle(noListText: TextView, haveList: Boolean){
+        if(!haveList){
+            noListText.visibility = View.VISIBLE
+        } else{
+            noListText.visibility = View.GONE
+        }
     }
 }

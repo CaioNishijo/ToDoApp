@@ -8,7 +8,7 @@
     tools:context=".MainActivity">
 
     <LinearLayout
-        android:id="@+id/buttonLayout"
+        android:id="@+id/layout_buttons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="20dp"
@@ -19,7 +19,7 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/openSearchActBtn"
+            android:id="@+id/btn_open_search_activity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
@@ -27,7 +27,7 @@
             app:srcCompat="@drawable/search_svgrepo_com" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/clear_btn"
+            android:id="@+id/btn_clear_all"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
@@ -35,7 +35,7 @@
             app:srcCompat="@drawable/edit_clear_svgrepo_com" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/add_todo"
+            android:id="@+id/btn_open_add_forms"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clickable="true"
@@ -64,6 +64,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
+
+    <TextView
+        android:id="@+id/empty_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:gravity="center"
+        android:text="Parece que não há nenhuma atividade"
+        android:textSize="44dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/todo_list"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/todo_list" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
